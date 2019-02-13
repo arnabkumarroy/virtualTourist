@@ -26,14 +26,13 @@ class ImageCollectionViewController: UIViewController, MKMapViewDelegate {
     //------------------------------------------------------------------------------
     // MARK: Vars/Lets
     
-    let pinLocation = CLLocationCoordinate2D(latitude: UserDefaults.standard.double(forKey: "InitialLatitude"), longitude: UserDefaults.standard.double(forKey: "InitialLongitude"))
+    let pinLocation = CLLocationCoordinate2D(latitude: UserDefaults.standard.double(forKey: "InitLatitude"), longitude: UserDefaults.standard.double(forKey: "InitLongitude"))
     let client = FlickrClient()
     var dataController: DataController!
     var selectedPhotoPin: Pin!
     var fetchedResultsController:NSFetchedResultsController<Photo>!
     var indexOfCollectionView = 0
     
-    //------------------------------------------------------------------------------
     // MARK: Lifecycle
     
     override func viewDidLoad() {
@@ -49,8 +48,8 @@ class ImageCollectionViewController: UIViewController, MKMapViewDelegate {
         createAnnotation()
         
         // Fetch, Check if saved Photos, else get from client
-        pullSavedPhotos()
-        checkIfPhotos()
+        displaySavedPhotos()
+        checkSavedPhotos()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -58,20 +57,19 @@ class ImageCollectionViewController: UIViewController, MKMapViewDelegate {
         fetchedResultsController = nil
     }
     
-    //------------------------------------------------------------------------------
     // MARK: Actions
     @IBAction func getNewCollection(_ sender: Any) {
         deleteSavedPhotos()
         getphotosFromClient()
     }
     
-    //------------------------------------------------------------------------------
     // MARK: Functions
     
     // if saved photos proceed, else get them from client
-    func checkIfPhotos() {
+    func checkSavedPhotos() {
         if selectedPhotoPin.photos?.count != 0 {
             activityIndicatorImageview.stopAnimating()
+            self.activityIndicatorImageview.isHidden = true
             newCollectionButton.isEnabled = true
         } else {
             getphotosFromClient()
@@ -80,6 +78,10 @@ class ImageCollectionViewController: UIViewController, MKMapViewDelegate {
     
     func getphotosFromClient() {
         client.getPhotos() { (success, uRLResultLevel1, error) in
+            performUIUpdatesOnMain {
+                self.activityIndicatorImageview.startAnimating()
+                self.activityIndicatorImageview.isHidden = false
+            }
             if success {
                 
                 performUIUpdatesOnMain {
@@ -96,37 +98,36 @@ class ImageCollectionViewController: UIViewController, MKMapViewDelegate {
                     let imageURL = URL(string: uRLString)
                     let imageAsData = try? Data(contentsOf: imageURL!)
                     photo.image = imageAsData
-                    photo.creationDate = Date()
                     self.selectedPhotoPin.addToPhotos(photo)
-                    do{
-                        try self.dataController.viewContext.save()
-                    }catch {
-                        fatalError("The fetch could not be performed: \(error.localizedDescription)")
-                    }
+                    try? self.dataController.viewContext.save()
                 }
                 
                 performUIUpdatesOnMain {
                     self.activityIndicatorImageview.stopAnimating()
+                    self.activityIndicatorImageview.isHidden = true
                     self.newCollectionButton.isEnabled = true
                     self.photoCollectionView.isScrollEnabled = true
                 }
             } else {
                 performUIUpdatesOnMain {
                     self.activityIndicatorImageview.stopAnimating()
-                    self.noImageText.isHidden = false
+                    self.activityIndicatorImageview.isHidden = true
+                    self.noImageText.isHidden = true
                     self.photoCollectionView.isScrollEnabled = true
                 }
             }
         }
     }
     
-    // Fetch Photos using fetchedRequest and fetchController
-    func pullSavedPhotos() {
+    // Fetch Images using fetchedRequest and fetchController
+    func displaySavedPhotos() {
+        performUIUpdatesOnMain {
+            self.activityIndicatorImageview.startAnimating()
+            self.activityIndicatorImageview.isHidden = false
+        }
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
         let predicate = NSPredicate(format: "pin == %@", self.selectedPhotoPin)
         fetchRequest.predicate = predicate
-        
-        //fetchedResultsController needs sorting to work properly
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         
         self.fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: self.dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
@@ -136,6 +137,10 @@ class ImageCollectionViewController: UIViewController, MKMapViewDelegate {
             print("fetchPerformed")
         } catch {
             fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+        performUIUpdatesOnMain {
+            self.activityIndicatorImageview.stopAnimating()
+            self.activityIndicatorImageview.isHidden = true
         }
     }
     
@@ -167,12 +172,27 @@ class ImageCollectionViewController: UIViewController, MKMapViewDelegate {
     }
 }
 
-//------------------------------------------------------------------------------
-// MARK: UICollectionView dataSource, delegate
-
-extension ImageCollectionViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+// MARK: UICollectionView dataSource, delegate and Delegate Flow layout
+extension ImageCollectionViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
-    //TODO: Place holder images until photos are downloaded, displayed as soon as possible
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let availableWidth = view.frame.width - 30
+        return CGSize(width: availableWidth, height: 130)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        insetForSectionAt section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 15, left: 0, bottom: 15, right: 0)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 15
+    }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return fetchedResultsController.sections?.count ?? 1
@@ -207,7 +227,6 @@ extension ImageCollectionViewController: UICollectionViewDataSource, UICollectio
     }
 }
 
-//------------------------------------------------------------------------------
 // MARK: NSFetchedResultsControllerDelegate
 
 extension ImageCollectionViewController: NSFetchedResultsControllerDelegate {

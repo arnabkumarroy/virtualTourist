@@ -14,7 +14,6 @@ class FlickrClient {
     
     var dataController: DataController!
     
-    // MARK: Network to get photos from Flickr
     func getPhotos(completionHandler: @escaping (_ success: Bool, _ uRLResultLevel1: [String], _ error: String?) -> Void) {
         let methodParameters = [
             StructConstant.FlickrParameterKeys.Method: StructConstant.FlickrParameterValues.SearchMethod,
@@ -28,7 +27,6 @@ class FlickrClient {
         
         getFlickrData(methodParameters as [String:AnyObject]) { (success, uRLResultLevel2, error) in
             if success {
-                // Proceed
                 let uRLArray = uRLResultLevel2
                 completionHandler(true, uRLArray, nil)
             } else {
@@ -105,7 +103,7 @@ class FlickrClient {
                 return
             }
             
-            // pick a random page!
+            // choose a random page!
             let pageLimit = min(totalPages, 40)
             let randomPage = Int(arc4random_uniform(UInt32(pageLimit))) + 1
             self.getRandomPageFlickrData(methodParameters, withPageNumber: randomPage) { (success, uRLResultLevel3, error) in
@@ -136,54 +134,46 @@ class FlickrClient {
         // create network request
         let task = session.dataTask(with: request) { (data, response, error) in
             
-            /* GUARD: Was there an error? */
             guard (error == nil) else {
                 completionHandler(false, [], "There was an error with your request: \(String(describing: error))")
                 return
             }
             
-            /* GUARD: Did we get a successful 2XX response? */
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299 else {
                 completionHandler(false, [], "Your request returned a status code other than 2xx!")
                 return
             }
             
-            /* GUARD: Was there any data returned? */
             guard let data = data else {
                 completionHandler(false, [], "No data was returned by the request!")
                 return
             }
             
-            // parse the data
             let parsedResult: [String:AnyObject]!
             do {
                 parsedResult = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:AnyObject]
             } catch {
-                completionHandler(false, [], "Could not parse the data as JSON: '\(data)'")
+                completionHandler(false, [], "not correct JSON. Parse Error: '\(data)'")
                 return
             }
             
-            /* GUARD: Did Flickr return an error (stat != ok)? */
             guard let stat = parsedResult[StructConstant.FlickrResponseKeys.Status] as? String, stat == StructConstant.FlickrResponseValues.OKStatus else {
-                completionHandler(false, [], "Flickr API returned an error. See error code and message in \(String(describing: parsedResult))")
+                completionHandler(false, [], "Flickr API returned an error. Error in \(String(describing: parsedResult))")
                 return
             }
             
-            /* GUARD: Is the "photos" key in our result? */
             guard let photosDictionary = parsedResult[StructConstant.FlickrResponseKeys.Photos] as? [String:AnyObject] else {
-                completionHandler(false, [], "Cannot find key '\(StructConstant.FlickrResponseKeys.Photos)' in \(String(describing: parsedResult))")
+                completionHandler(false, [], "Wrong Key '\(StructConstant.FlickrResponseKeys.Photos)' in \(String(describing: parsedResult))")
                 return
             }
             
-            /* GUARD: Is the "photo" key in photosDictionary? */
             guard let photosArray = photosDictionary[StructConstant.FlickrResponseKeys.Photo] as? [[String: AnyObject]] else {
-                completionHandler(false, [], "Cannot find key '\(StructConstant.FlickrResponseKeys.Photo)' in \(photosDictionary)")
+                completionHandler(false, [], "Wrong Key '\(StructConstant.FlickrResponseKeys.Photo)' in \(photosDictionary)")
                 return
             }
             
-            /* GUARD: Check if any photos exist */
             guard photosArray.count != 0 else {
-                completionHandler(false, [], "No Photos Found. Search Again.")
+                completionHandler(false, [], "No Photos Found. No One clicked here!")
                 return
             }
             
@@ -218,16 +208,7 @@ class FlickrClient {
         }
         task.resume()
     }
-    
-    //                TODO: set images
-    //                //var photos = [UIImage]()
-    //                let imageURL = URL(string: imageUrlString)
-    //                //print("imageURL = \(String(describing: imageURL))")
-    //                if let imageData = try? Data(contentsOf: imageURL!) {
-    //                    photos.append(UIImage(data: imageData)!)
-    //                }
-    
-    
+
     // MARK: Helper for Creating a URL from Parameters
     
     private func flickrURLFromParameters(_ parameters: [String:AnyObject]) -> URL {
@@ -246,32 +227,3 @@ class FlickrClient {
         return components.url!
     }
 }
-
-//// suggestion from mentor
-//class NetworkClient: NSObject {
-//
-//    // shared session
-//    var session = URLSession.shared
-//
-//    // MARK: Initializers
-//
-//    override init() {
-//        super.init()
-//    }
-//
-//
-//    func doLogout(session: String, completion: @escaping (_ data: LogoutResponseModel?, _ error : String?) -> Void) {
-//        makeRequest(.doLogout(session: session), type: LogoutResponseModel.self, completion: completion)
-//    }
-//
-//    static let shared = NetworkClient()
-//}
-
-////and when you want to use a function in this class, you can do as below
-//
-//NetworkClient.shared.doLogin(email: email, password: password, completion: { (data, error) in
-//.....
-//})
-
-// If you do choose to use a singleton it should be a private init so that there can be only one (accessed from .shared)
-

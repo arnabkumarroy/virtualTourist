@@ -16,26 +16,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let dataController = DataController(modelName: "VirtualTourist")
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        checkFirstLaunch()
+        firstLaunch()
         return true
     }
     
-    func checkFirstLaunch() {
-        if(UserDefaults.standard.bool(forKey: "hasLaunchedBefore")) {
-            print("App has launched before")
+    func firstLaunch() {
+        if(UserDefaults.standard.bool(forKey: "isNotFirstLaunch")) {
         } else {
-            print("First Launch!")
-            UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
-            UserDefaults.standard.set(37.0902, forKey: "InitialLatitude")
-            UserDefaults.standard.set(-95.7129, forKey: "InitialLongitude")
+            UserDefaults.standard.set(true, forKey: "isNotFirstLaunch")
+            UserDefaults.standard.set(37.0902, forKey: "InitLatitude")
+            UserDefaults.standard.set(-95.7129, forKey: "InitLatitude")
             UserDefaults.standard.synchronize()
         }
     }
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
         dataController.load()
-        
         let navigationController = window?.rootViewController as! UINavigationController
         let mapDashboardController = navigationController.topViewController as! MapDashboardController
         mapDashboardController.dataController = dataController
