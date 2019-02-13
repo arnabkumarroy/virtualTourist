@@ -38,7 +38,6 @@ class FlickrClient {
     }
     
     private func bboxString() -> String {
-        // ensure bbox is bounded by minimum and maximums, has max and mins if wanting to add enter in own coordinates feature
         let latitude = UserDefaults.standard.double(forKey: "InitialLatitude")
         let longitude = UserDefaults.standard.double(forKey: "InitialLongitude")
         let minimumLon = max(longitude - StructConstant.Flickr.SearchBBoxHalfWidth, StructConstant.Flickr.SearchLonRange.0)

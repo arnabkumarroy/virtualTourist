@@ -26,7 +26,7 @@ class ImageCollectionViewController: UIViewController, MKMapViewDelegate {
     //------------------------------------------------------------------------------
     // MARK: Vars/Lets
     
-    let pinLocation = CLLocationCoordinate2D(latitude: UserDefaults.standard.double(forKey: "InitLatitude"), longitude: UserDefaults.standard.double(forKey: "InitLongitude"))
+    let pinLocation = CLLocationCoordinate2D(latitude: UserDefaults.standard.double(forKey: "InitialLatitude"), longitude: UserDefaults.standard.double(forKey: "InitialLongitude"))
     let client = FlickrClient()
     var dataController: DataController!
     var selectedPhotoPin: Pin!

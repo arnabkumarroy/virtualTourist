@@ -40,7 +40,7 @@ class MapDashboardController: UIViewController, MKMapViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        centerMapOnLocation(location: CLLocationCoordinate2D(latitude: UserDefaults.standard.double(forKey: "InitLatitude"), longitude: UserDefaults.standard.double(forKey: "InitLongitude")), map: mapview, size: 2350000)
+        centerMapOnLocation(location: CLLocationCoordinate2D(latitude: UserDefaults.standard.double(forKey: "InitialLatitude"), longitude: UserDefaults.standard.double(forKey: "InitialLongitude")), map: mapview, size: 2350000)
     }
     func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
         self.activityIndicator.stopAnimating()
@@ -73,8 +73,8 @@ class MapDashboardController: UIViewController, MKMapViewDelegate {
             self.mapview.addAnnotation(pinAnnotation)
             
             // Save coordinates of pin tapped for UserDefault
-            UserDefaults.standard.set(newCoordinate.latitude, forKey: "InitLatitude")
-            UserDefaults.standard.set(newCoordinate.longitude, forKey: "InitLongitude")
+            UserDefaults.standard.set(newCoordinate.latitude, forKey: "InitialLatitude")
+            UserDefaults.standard.set(newCoordinate.longitude, forKey: "InitialLongitude")
             UserDefaults.standard.synchronize()
         }
     }
@@ -86,8 +86,8 @@ class MapDashboardController: UIViewController, MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didSelect: MKAnnotationView) {
         
         // Storing the coordinate in UserDefault for relaunch
-        UserDefaults.standard.set(didSelect.annotation!.coordinate.latitude, forKey: "InitLatitude")
-        UserDefaults.standard.set(didSelect.annotation!.coordinate.longitude, forKey: "InitLongitude")
+        UserDefaults.standard.set(didSelect.annotation!.coordinate.latitude, forKey: "InitialLatitude")
+        UserDefaults.standard.set(didSelect.annotation!.coordinate.longitude, forKey: "InitialLongitude")
         UserDefaults.standard.synchronize()
         
         // goto  ImageCollectionViewController

@@ -24,8 +24,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if(UserDefaults.standard.bool(forKey: "isNotFirstLaunch")) {
         } else {
             UserDefaults.standard.set(true, forKey: "isNotFirstLaunch")
-            UserDefaults.standard.set(37.0902, forKey: "InitLatitude")
-            UserDefaults.standard.set(-95.7129, forKey: "InitLatitude")
+            UserDefaults.standard.set(37.0902, forKey: "InitialLatitude")
+            UserDefaults.standard.set(-95.7129, forKey: "InitialLatitude")
             UserDefaults.standard.synchronize()
         }
     }
