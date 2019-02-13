@@ -149,7 +149,7 @@ class ImageCollectionViewController: UIViewController, MKMapViewDelegate {
         for cell in photoCollectionView.visibleCells {
             if let cell = cell as? ImageCollectionViewCell {
                 //cell.activityIndicatorImageview.startAnimating()
-               cell.imageView.image = UIImage(named: "icon_pin")
+                cell.imageView.image = UIImage(named: "icon_pin")
             }
         }
         

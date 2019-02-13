@@ -12,13 +12,13 @@ import MapKit
 import CoreData
 
 class MapDashboardController: UIViewController, MKMapViewDelegate {
-
-// MARK: Outlets
+    
+    // MARK: Outlets
     @IBOutlet weak var mapview: MKMapView!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
-
-// MARK: Vars/Lets
+    
+    // MARK: Vars/Lets
     
     var pins: [Pin] = []
     let flickerClient = FlickrClient()
@@ -35,7 +35,7 @@ class MapDashboardController: UIViewController, MKMapViewDelegate {
             pins = result
         }
         addPinsToMap()
-
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -43,8 +43,8 @@ class MapDashboardController: UIViewController, MKMapViewDelegate {
         centerMapOnLocation(location: CLLocationCoordinate2D(latitude: UserDefaults.standard.double(forKey: "InitLatitude"), longitude: UserDefaults.standard.double(forKey: "InitLongitude")), map: mapview, size: 2350000)
     }
     func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
-         self.activityIndicator.stopAnimating()
-         self.activityIndicator.isHidden = true
+        self.activityIndicator.stopAnimating()
+        self.activityIndicator.isHidden = true
     }
     
     //------------------------------------------------------------------------------
